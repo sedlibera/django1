@@ -8,8 +8,8 @@ class AuthorAdmin(admin.ModelAdmin):
 
 class BooksInstanceInline(admin.TabularInline):
     model = BookInstance
-    readonly_fields = ("id",)
-    can_delete = False
+    # readonly_fields = ("id",)
+    # can_delete = False
     extra = 0
 
 class BookAdmin(admin.ModelAdmin):

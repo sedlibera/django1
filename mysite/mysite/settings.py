@@ -127,3 +127,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'library/media')
 
 MEDIA_URL = '/media/'
+
+LOGIN_REDIRECT_URL = '/'
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = 'mail.pythonkursas.smshostingas.lt'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = "vytautas@pythonkursas.smshostingas.lt"
+EMAIL_HOST_PASSWORD = "PythonKursas2022"
+
