@@ -17,13 +17,13 @@ class BookAdmin(admin.ModelAdmin):
     inlines = [BooksInstanceInline]
 
 class BookInstanceAdmin(admin.ModelAdmin):
-    list_display = ("book", "status", "due_back")
+    list_display = ("book", "status", "reader", "due_back")
     list_editable = ("due_back", "status")
     list_filter = ("status", "due_back")
     search_fields = ("id", "book__title")
     fieldsets = (
         ("General", {"fields": ("id", "book")}),
-        ("Availability", {"fields": ("status", "due_back")})
+        ("Availability", {"fields": ("status", "due_back", "reader")})
     )
 
 
