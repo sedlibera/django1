@@ -1,12 +1,16 @@
 import logging
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from .models import Book, Author, BookInstance, Genre
 from django.views import generic
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.forms import User
+from django.views.decorators.csrf import csrf_protect
+from django.contrib import messages
+
 
 def index(request):
     num_books = Book.objects.all().count()
@@ -59,3 +63,30 @@ class LoanedBooksByUserListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         return BookInstance.objects.filter(reader=self.request.user).filter(status__exact="p").order_by("due_back")
+
+@csrf_protect
+def register(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        email = request.POST['email']
+        password = request.POST['password']
+        password2 = request.POST['password2']
+        laukai = [username, email, password, password2]
+        if not all(laukai):
+            messages.error(request, f"Visi laukai turi būti užpildyti!")
+            return redirect("register")
+        if password == password2:
+            if User.objects.filter(username=username).exists():
+                messages.error(request, f"Vartotojo vardas {username} uzimtas!")
+                return redirect("register")
+            else:
+                if User.objects.filter(email=email).exists():
+                    messages.error(request, f"Vartotojas su el. pastu {email} jau uzregistruotas!")
+                    return redirect("register")
+                else:
+                    User.objects.create_user(username, email=email, password=password)
+                    messages.success(request, f"Vartotojas {username} sukurtas")
+        else:
+            messages.error(request, "Slaptazodziai nesutampa!!!")
+            return redirect("register")
+    return render(request, "register.html")
