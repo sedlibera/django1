@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from .forms import BookReviewForm
 from django.views.generic.edit import FormMixin
-
+from django.contrib.auth.decorators import login_required
 
 
 def index(request):
@@ -118,3 +118,7 @@ def register(request):
             messages.error(request, "Slaptazodziai nesutampa!!!")
             return redirect("register")
     return render(request, "register.html")
+
+@login_required
+def profilis(request):
+    return render(request, "profilis.html")
