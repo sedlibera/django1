@@ -22,6 +22,27 @@
     {% endif %}
     <p class="text-muted">Id: {{ copy.id }}</p>
     {% endfor %}
+    <h4>Atsiliepimai</h4>
+    {% if book.bookreview_set.all %}
+        {% for review in book.bookreview_set.all %}
+        <hr>
+        <strong>{{ review.reviewer }}</strong>, <em>{{ review.date_created }}</em>
+        <p>{{ review.content }}</p>
+        {% endfor %}
+    {% else %}
+        <p>Knyga neturi atsiliepimu</p>
+    {% endif %}
 </div>
-
+{% if user.is_authenticated %}
+<div class="fieldWrapper">
+    <hr>
+    <h4>Palikite atsiliepima:</h4>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.content }}
+        <br>
+        <input type="submit" value="Issaugoti">
+    </form>
+</div>
+{% endif %}
 {% endblock %}
