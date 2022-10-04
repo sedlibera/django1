@@ -6,13 +6,14 @@ from .models import Book, Author, BookInstance, Genre
 from django.views import generic
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.forms import User
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from .forms import BookReviewForm, UserUpdateForm, ProfilisUpdateForm
 from django.views.generic.edit import FormMixin
 from django.contrib.auth.decorators import login_required
+from django.utils.translation import gettext as _
 
 
 def index(request):
@@ -101,21 +102,21 @@ def register(request):
         password2 = request.POST['password2']
         laukai = [username, email, password, password2]
         if not all(laukai):
-            messages.error(request, f"Visi laukai turi būti užpildyti!")
+            messages.error(request, _(f"All fields bust be filled!"))
             return redirect("register")
         if password == password2:
             if User.objects.filter(username=username).exists():
-                messages.error(request, f"Vartotojo vardas {username} uzimtas!")
+                messages.error(request, _("Username %s already exists!") % username)
                 return redirect("register")
             else:
                 if User.objects.filter(email=email).exists():
-                    messages.error(request, f"Vartotojas su el. pastu {email} jau uzregistruotas!")
+                    messages.error(request, _("Email %s already exists!") % email)
                     return redirect("register")
                 else:
                     User.objects.create_user(username, email=email, password=password)
-                    messages.success(request, f"Vartotojas {username} sukurtas")
+                    messages.success(request, _("User %s created") % username)
         else:
-            messages.error(request, "Slaptazodziai nesutampa!!!")
+            messages.error(request, _("Passwords do not match!!!"))
             return redirect("register")
     return render(request, "register.html")
 
@@ -140,3 +141,31 @@ def profilis(request):
     context = {"u_form": u_form, "p_form": p_form}
 
     return render(request, "profilis.html", context)
+
+class BookByUserDetailView(LoginRequiredMixin, generic.DetailView):
+    model = BookInstance
+    template_name = "user_book.html"
+
+class BookByUserCreateView(LoginRequiredMixin, generic.CreateView):
+    model=BookInstance
+    fields = ["book", "due_back"]
+    success_url = "/library/mybooks/"
+    template_name = "user_book_form.html"
+
+    def form_valid(self, form):
+        form.instance.reader = self.request.user
+        return super().form_valid(form)
+
+class BookByUserUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+    model = BookInstance
+    fields = ["book", "due_back"]
+    success_url = "/library/mybooks/"
+    template_name = "user_book_form.html"
+
+    def form_valid(self, form):
+        form.instance.reader = self.request.user
+        return super().form_valid(form)
+
+    def test_func(self):
+        book = self.get_object()
+        return self.request.user == book.reader

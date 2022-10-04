@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from datetime import date
 from tinymce.models import HTMLField
 from PIL import Image
+from django.utils.translation import gettext_lazy as _
 
 class Genre(models.Model):
     name = models.CharField("Pavadinimas",
@@ -19,12 +20,12 @@ class Genre(models.Model):
         return self.name
 
 class Book(models.Model):
-    title = models.CharField("Pavadinimas", max_length=200)
+    title = models.CharField(_("Title"), max_length=200)
     author = models.ForeignKey("Author", on_delete=models.SET_NULL, null=True, related_name="books")
-    summary = models.TextField("Aprasymas", max_length=1000, help_text="Trumpas knygos aprašymas")
+    summary = models.TextField(_("Summary"), max_length=1000, help_text="Trumpas knygos aprašymas")
     isbn = models.CharField("ISBN", max_length=13)
     genre = models.ManyToManyField(Genre, help_text="Išrinkite žanrą(us) šiai knygai")
-    cover = models.ImageField("Virselis", upload_to="covers", null=True)
+    cover = models.ImageField(_("Cover"), upload_to="covers", null=True)
 
     def __str__(self):
         return self.title
@@ -77,6 +78,9 @@ class BookInstance(models.Model):
         if self.due_back and date.today() > self.due_back:
             return True
         return False
+
+    def get_absolute_url(self):
+        return reverse("book-detail", args=[str(self.id)])
 
     class Meta:
         ordering = ["due_back"]
